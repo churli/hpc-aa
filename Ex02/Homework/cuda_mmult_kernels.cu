@@ -152,7 +152,7 @@ __global__ void matrixMultKernel_overlap(float* Ad, float* Bd, float* Cd, int n)
    {
      Celem += Ads[ty][j]*Bds[j][tx];
    }
-   __syncthreads();
+   // __syncthreads();
 
    Cd[i*n+k] += Celem;
 }
