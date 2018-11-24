@@ -108,4 +108,51 @@ __global__ void matrixMultKernel_coalesced(float* Ad, float* Bd, float* Cd, int 
 __global__ void matrixMultKernel_overlap(float* Ad, float* Bd, float* Cd, int n)
 {
    /* TODO: implement overlapped matrix multiplication */
+   __shared__ float Ads[TILE_SIZE][TILE_SIZE];
+   __shared__ float Bds[TILE_SIZE][TILE_SIZE];
+
+   int tx = threadIdx.x;
+   int ty = threadIdx.y;
+   
+   int i = blockIdx.y * TILE_SIZE + ty;
+   int k = blockIdx.x * TILE_SIZE + tx;
+   
+   float Celem = 0;
+
+   // Local variables on registers, initialized with first round of tiled data
+   // Initial prefetching
+   float Alocal = Ad[ i*n +tx ];
+   float Blocal = Bd[ ty*n + k ];
+   
+   for(int m=1; m < n/TILE_SIZE; m++) {
+      // Copy registers to shared memory
+      Ads[ty][tx] = Alocal;
+      Bds[ty][tx] = Blocal;
+      __syncthreads();
+
+      // Copy new data to registers
+      Alocal = Ad[ i*n + m*TILE_SIZE+tx ];
+      Blocal = Bd[ (m*TILE_SIZE+ty)*n + k ];
+
+      // Compute current tile
+      for(int j=0; j<TILE_SIZE; j++)
+      {
+        Celem += Ads[ty][j]*Bds[j][tx];
+      }
+      __syncthreads();
+   };
+   
+   // Last iteration of loop is without prefetching
+   // Copy registers to shared memory
+   Ads[ty][tx] = Alocal;
+   Bds[ty][tx] = Blocal;
+   __syncthreads();
+   // Compute last tile
+   for(int j=0; j<TILE_SIZE; j++)
+   {
+     Celem += Ads[ty][j]*Bds[j][tx];
+   }
+   __syncthreads();
+
+   Cd[i*n+k] += Celem;
 }
