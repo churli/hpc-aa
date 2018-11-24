@@ -1,6 +1,12 @@
+# Cuda-related gitignore
+
 *.i
 *.ii
 *.gpu
 *.ptx
 *.cubin
 *.fatbin
+
+#Also ignore zip files
+*.zip
+
