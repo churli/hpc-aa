@@ -24,7 +24,7 @@ extern "C" void ELLmatvecmult(int N, int num_cols_per_row , int * indices, float
  */
 __global__ void k_csr_mat_vec_mm(int *starts, int* column, float *data, int num_rows, float *x, float* y) {
     //TODO: implement the CSR kernel
-    int row = blockIdx.y * TILE_SIZE + threadIdx.y;
+    int row = blockIdx.x * TILE_SIZE + threadIdx.x;
     int start = starts[row];
     int end = starts[row+1];
     int res = 0;
