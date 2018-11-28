@@ -22,8 +22,17 @@ extern "C" void ELLmatvecmult(int N, int num_cols_per_row , int * indices, float
 /**
  * Cuda kernel for: CSR_s(A)x = y
  */
-__global__ void k_csr_mat_vec_mm(int *ptr, int* indices, float *data, int num_rows, float *x, float* y) {
+__global__ void k_csr_mat_vec_mm(int *starts, int* column, float *data, int num_rows, float *x, float* y) {
     //TODO: implement the CSR kernel
+    int row = blockIdx.y * TILE_SIZE + threadIdx.y;
+    int start = starts[row];
+    int end = starts[row+1];
+    int res = 0;
+    for (int j=start; j<end; ++j)
+    {
+        res += data[j] * x[column[j]];
+    }
+    y[row] = res;
 }
 
 /**
