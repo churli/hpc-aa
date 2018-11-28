@@ -141,7 +141,7 @@ __global__ void matrixMultKernel_overlap(float* Ad, float* Bd, float* Cd, int n)
       }
       __syncthreads();
    };
-   
+
    // Last iteration of loop is without prefetching
    // Copy registers to shared memory
    Ads[ty][tx] = Alocal;
@@ -152,7 +152,6 @@ __global__ void matrixMultKernel_overlap(float* Ad, float* Bd, float* Cd, int n)
    {
      Celem += Ads[ty][j]*Bds[j][tx];
    }
-   // __syncthreads();
-
+   
    Cd[i*n+k] += Celem;
 }
